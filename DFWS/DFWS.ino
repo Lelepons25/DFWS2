@@ -16,7 +16,7 @@
 const int LOADCELL_DOUT_PIN = 47;
 const int LOADCELL_SCK_PIN = 46;
 
-//HX711_ADC scale(47, 46);
+HX711_ADC scale(47, 46);
 int taree = A0;
 
 // Color definitions
@@ -75,7 +75,7 @@ uint8_t textfield_i = 0;
 
 #include <MCUFRIEND_kbv.h>
 MCUFRIEND_kbv tft;
-//Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
 
@@ -160,6 +160,7 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 char currentPage, categoryPage, unit;
 int newCalorie = 0;
 int newcurrent = 0, current = 0, count = 0, counter = 0, check = 0, calorie = 0;
+float weight = 0;
 int x = 0, y = 0, z = 0;
 int totalIntake = 0;
 
@@ -206,7 +207,7 @@ Adafruit_GFX_Button dairy[10];
 char dairylabels[10][50] = { "Cheese", "Chic Spread", "Cream", "Buttermilk", "Cara Milk", "Cow Milk", "Egg", "Egg Duck", "Goat Milk", "Yoghurt" };
 int dairycalories[10] = { 297, 210, 241, 43, 124, 65, 139, 177, 73, 83 };
 
-
+uint16_t ID;
 
 void setup() {
 
@@ -222,52 +223,21 @@ void setup() {
     currentPage = '0';
     newcurrent = '0';
 
-    /*//Serial.begin(57600);
+    //Serial.begin(57600);
     pinMode(taree, INPUT_PULLUP);
     scale.begin(); // start connection to HX711
     scale.start(1000); // load cells gets 1000ms of time to stabilize
     //Calibarate your LOAD CELL with 100g weight, and change the value according to readings
-    scale.setCalFactor(228);*/
+    scale.setCalFactor(216.83);
 
 }
 
 
-
-
 void loop() {
 
-    /*scale.update();
+    scale.update();
     float w = scale.getData();
-    if (w < 0)
-    {
-        w = w * (-1);
-        //Serial.println("-");
-        //Serial.println("-");
-    }
-    else
-    {
-        //Serial.println(" ");
-        //Serial.println(" ");
-    }
 
-    //DisplayWeight(w);
-
-    if (w >= 10000)
-    {
-        w = 0;
-        OverWeight();
-        delay(200);
-    }
-
-    if (digitalRead(taree) == LOW)
-    {
-        Serial.println("   Taring...    ");
-        scale.start(1000);
-        Serial.println("                ");
-    }
-*/
-   
-    
     TSPoint p = ts.getPoint();
     digitalWrite(13, LOW);
     // if sharing pins, you'll need to fix the directions of the touchscreen pins
@@ -282,6 +252,9 @@ void loop() {
 
     
     if (currentPage == '0') {
+
+
+        weight = computeWeight(w);
 
         if (p.x >= 200 && p.x <= 275 && p.y >= 20 && p.y <= 40) {
             inputButton[1].press(true);
@@ -450,8 +423,21 @@ void loop() {
     }
 
     
+    //Tare
     if (currentPage == '3') {
-        DrawTare();
+        tft.fillRect(20, 120, 200, 50, ILI9341_WHITE);
+        tft.setCursor(90, 140);
+        tft.setTextColor(ILI9341_BLACK);
+        tft.setTextSize(2);
+        tft.println("TARE");
+
+        weight = 0;
+        DisplayWeight(weight);
+        scale.start(1000);
+        currentPage = '0';
+
+
+
     }
 
     //Tracker
@@ -498,9 +484,10 @@ void loop() {
             DrawTrack(x, y, z);
         }
     }
-
     //Fruits
     if (currentPage == '5') {
+
+
 
 
         void fillscreen();
@@ -519,7 +506,16 @@ void loop() {
             BackButton[0].press(false);
             CancelButton[0].press(false);
 
+            Serial.print("Pressure: ");
+            Serial.println(p.z);
+            Serial.println("p.x:");
+            Serial.println(p.x);
+            Serial.println("p.y");
+            Serial.println(p.y);
+
+
             if (p.x >= 120 && p.x <= 340 && p.y >= 110 && p.y <= 140) {
+                clearInput();
                 fruit[0].press(true);
                 Serial.println("b = 1");
                 count = 0;
@@ -527,6 +523,7 @@ void loop() {
 
             }
             if (p.x >= 120 && p.x <= 340 && p.y >= 148 && p.y <= 178) {
+                clearInput();
                 fruit[1].press(true);
                 Serial.println("b = 2");
                 count = 1;
@@ -534,18 +531,21 @@ void loop() {
 
             }
             if (p.x >= 120 && p.x <= 340 && p.y >= 186 && p.y <= 216) {
+                clearInput();
                 fruit[2].press(true);
                 Serial.println("b = 3");
                 count = 2;
                 displayCalorie(2, categ);
             }
             if (p.x >= 120 && p.x <= 340 && p.y >= 224 && p.y <= 254) {
+                clearInput();
                 fruit[3].press(true);
                 Serial.println("b = 4");
                 count = 3;
                 displayCalorie(3, categ);
             }
             if (p.x >= 120 && p.x <= 340 && p.y >= 262 && p.y <= 292) {
+                clearInput();
                 fruit[4].press(true);
                 Serial.println("b = 5");
                 count = 4;
@@ -575,7 +575,6 @@ void loop() {
                 else {
                     SaveButton[0].press(false);
                 }
-                //y = addIntake(addCalories, calCounter + 1);
 
             }
         }

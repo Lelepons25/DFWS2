@@ -11,6 +11,9 @@
                 FRUIT_W, FRUIT_H, ILI9341_WHITE, colors, ILI9341_WHITE,
                 fruitlabels[col + row], FRUIT_TEXTSIZE);
             fruit[col + row].drawButton();
+
+            //Serial.println("p.y:");
+            //Serial.println(FRUIT_Y + row * (FRUIT_H + FRUIT_SPACING_Y));
         }
     }
 

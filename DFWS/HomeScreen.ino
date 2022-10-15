@@ -13,6 +13,7 @@ void HomeScreen() {
                 ILI9341_WHITE,
                 categorylabels[col + row], CATEG_TEXTSIZE);
             category[col + row].drawButton();
+
         }
     }
 
